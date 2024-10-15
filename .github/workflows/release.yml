@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  REGISTRY_IMAGE: indiefan/nanit
+  REGISTRY_IMAGE: combmag/nanit
 
 jobs:
   build:

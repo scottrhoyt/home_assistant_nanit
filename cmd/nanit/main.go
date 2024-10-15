@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"github.com/indiefan/home_assistant_nanit/pkg/app"
 	"github.com/indiefan/home_assistant_nanit/pkg/mqtt"
 	"github.com/indiefan/home_assistant_nanit/pkg/utils"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 			Password:     utils.EnvVarStr("NANIT_PASSWORD", ""),
 			RefreshToken: utils.EnvVarStr("NANIT_REFRESH_TOKEN", ""),
 		},
-		SessionFile:     utils.EnvVarStr("NANIT_SESSION_FILE", "./data/session.json"),
+		SessionFile:     utils.EnvVarStr("NANIT_SESSION_FILE", "/data/session.json"),
 		DataDirectories: ensureDataDirectories(),
 		HTTPEnabled:     false,
 		EventPolling: app.EventPollingOpts{
