@@ -8,7 +8,7 @@ This is a fork of a no-longer-maintained project (https://gitlab.com/adam.stanek
 
 While it is possible to build the image locally from the included Dockerfile, it is recommended to install and update by pulling the official image directly from Docker Hub. To pull the image manually without running the container, run:
 
-`docker pull indiefan/nanit`
+`docker pull combmag/nanit`
 
 ## Authentication
 
@@ -18,7 +18,7 @@ Because Nanit requires 2FA authentication, before we can start we need to acquir
 
 Run the bundled init-nanit.sh utility directly via the Docker command line to acquire the token (replace `/path/to/data` with the local path you'd like the container to use for storing session data):
 
-`docker run -it -v /path/to/data:/data --entrypoint=/app/scripts/init-nanit.sh indiefan/nanit`
+`docker run -it -v /path/to/data:/data --entrypoint=/app/scripts/init-nanit.sh combmag/nanit`
 
 ** Important Note regarding Security**
 The refresh token provides complete access to your Nanit account without requiring any additional account information, so be sure to protect your system from access by unauthorized parties, and proceed at your own risk.
@@ -38,7 +38,7 @@ docker run \
   -e NANIT_RTMP_ADDR=xxx.xxx.xxx.xxx:1935 \
   -e NANIT_LOG_LEVEL=trace \
   -p 1935:1935 \
-  indiefan/nanit
+  combmag/nanit
 ```
 
 If this is your initial run, you may want to omit the `-d` flag so you can observe the output to find your `baby_uid` (which will be needed later if you plan on connecting anything to the feed, like Home Assistant). After getting the baby id (which won't change) you can stop the container and restart it with the `-d` flag.
@@ -57,29 +57,49 @@ camera:
 Restart Home Assistant and you should now have a camera entity named Nanit for use in dashboards.
 
 
-## Topics
-nanit/babies/light
+## Send Events
 
-payload:
+You can use MQTT to send events from it so that you can control light & whitenoise.
+
+### Topics
+`nanit/babies/light`
+
+This is used to turn on light/brightness and repeat
+
+| Parameter | Description | Type | Default Value |
+|-----------|-------------|------|---------------|
+|   isLightOn        |  Turn on light           |   boolean   |     Required          |
+|   nightLightTimeout       |     Timer to set timeout        |   number   |     Optional. Values: 900, 1800, 3600, 0(infinite)          |
+|    Brightness       |     Camera light brightness        |  number    |       Optional. Values: 0 - 100        |
+
+Example:
 ```
 {
   "isLightOn": true,
   "nightLightTimeout": 0
 }
 ```
-900/1800/3600/0
 
-nanit/babies/volume
+`nanit/babies/volume`
+
+Setup volume for playback
 ```
 {
-  "volume": 30
+  "volume": 30 // Value: 0 - 100
 }
 ```
 
-nanit/babies/playback
+`nanit/babies/playback`
 
-Start Whitenoise
+Used to start/stop whitenoise
 ```
+
+interface Playback {
+    status: "Started" | "Stopped",
+    filename: "birds.wav" | "whitenoise.wav" | "waves.wav" | "wind.wav"
+}
+
+Start Playback:
 {
   "playback": {
     "status": "STARTED",
@@ -88,7 +108,7 @@ Start Whitenoise
 }
 ```
 
-Stop
+Stop Playback
 ```
 {
    "playback":{

@@ -60,3 +60,7 @@ I am not sure if it is possible to interface it.
 Upon push notification client seems to just fetch the event by ID at `/babies/{baby_uid}/events/{event_uid}`.
 
 Events seems to be listable over `/babies/{baby_uid}/events` but I haven't found this endpoint to be actually used by the mobile app.
+
+## Useful tips internal
+
+Generate protobuff `protoc --go_out=./ websocket.proto`
