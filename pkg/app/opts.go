@@ -1,8 +1,9 @@
 package app
 
 import (
-	"github.com/indiefan/home_assistant_nanit/pkg/mqtt"
 	"time"
+
+	"github.com/combmag/home_assistant_nanit/pkg/mqtt"
 )
 
 // Opts - application run options

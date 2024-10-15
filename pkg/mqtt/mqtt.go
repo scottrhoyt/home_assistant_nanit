@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/combmag/home_assistant_nanit/pkg/baby"
+	CLT "github.com/combmag/home_assistant_nanit/pkg/client"
+	"github.com/combmag/home_assistant_nanit/pkg/utils"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
-	"github.com/indiefan/home_assistant_nanit/pkg/baby"
-	CLT "github.com/indiefan/home_assistant_nanit/pkg/client"
-	"github.com/indiefan/home_assistant_nanit/pkg/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -55,8 +55,10 @@ func (conn *Connection) Run(manager *baby.StateManager, ctx utils.GracefulContex
 
 // {id:473  type:PUT_CONTROL  control:{nightLight:LIGHT_ON}}
 func handleLight(client MQTT.Client, msg MQTT.Message) {
+	log.Info().Str("CONN NULL", "Entered")
 	var connection = CLT.GetWebsocketConnection()
 	if connection == nil {
+		log.Info().Str("CONN NULL", "NULL CONNECTION")
 		return
 	}
 	log.Info().Str("topic", msg.Topic()).Msgf("Received Volume: %s", msg.Payload())
@@ -239,10 +241,10 @@ func runMqtt(conn *Connection, attempt utils.AttemptContext) {
 	client.Subscribe(topicToSubscribe, 0, handlePlayback)
 
 	topicToSubscribe2 := fmt.Sprintf("%v/babies/volume", conn.Opts.TopicPrefix)
-	client.Subscribe(topicToSubscribe2, 1, handleVolume)
+	client.Subscribe(topicToSubscribe2, 0, handleVolume)
 
 	topicToSubscribe3 := fmt.Sprintf("%v/babies/light", conn.Opts.TopicPrefix)
-	client.Subscribe(topicToSubscribe3, 1, handleLight)
+	client.Subscribe(topicToSubscribe3, 0, handleLight)
 	// }
 	unsubscribe := conn.StateManager.Subscribe(func(babyUID string, state baby.State) {
 		publish := func(key string, value interface{}) {

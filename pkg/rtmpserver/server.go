@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/combmag/home_assistant_nanit/pkg/baby"
 	"github.com/notedit/rtmp/format/rtmp"
 	"github.com/rs/zerolog/log"
-	"github.com/indiefan/home_assistant_nanit/pkg/baby"
 )
 
 type rtmpHandler struct {

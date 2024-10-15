@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/indiefan/home_assistant_nanit/pkg/utils"
+	"github.com/combmag/home_assistant_nanit/pkg/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/sacOO7/gowebsocket"

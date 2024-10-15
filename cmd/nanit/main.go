@@ -6,11 +6,13 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/indiefan/home_assistant_nanit/pkg/app"
-	"github.com/indiefan/home_assistant_nanit/pkg/mqtt"
-	"github.com/indiefan/home_assistant_nanit/pkg/utils"
+	"github.com/combmag/home_assistant_nanit/pkg/app"
+	"github.com/combmag/home_assistant_nanit/pkg/mqtt"
+	"github.com/combmag/home_assistant_nanit/pkg/utils"
 	"github.com/rs/zerolog/log"
 )
+
+var myInstance *app.App
 
 func main() {
 	initLogger()
@@ -69,6 +71,7 @@ func main() {
 
 	instance := app.NewApp(opts)
 
+	myInstance = instance
 	runner := utils.RunWithGracefulCancel(instance.Run)
 
 	<-interrupt

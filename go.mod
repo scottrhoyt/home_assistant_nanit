@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.3.0
-	github.com/indiefan/home_assistant_nanit v1.2.0
+	github.com/combmag/home_assistant_nanit v1.3.0
 	github.com/joho/godotenv v1.3.0
 	github.com/notedit/rtmp v0.0.2
 	github.com/rs/zerolog v1.20.0

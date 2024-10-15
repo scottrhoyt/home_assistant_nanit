@@ -5,13 +5,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/indiefan/home_assistant_nanit/pkg/baby"
-	"github.com/indiefan/home_assistant_nanit/pkg/client"
-	"github.com/indiefan/home_assistant_nanit/pkg/message"
-	"github.com/indiefan/home_assistant_nanit/pkg/mqtt"
-	"github.com/indiefan/home_assistant_nanit/pkg/rtmpserver"
-	"github.com/indiefan/home_assistant_nanit/pkg/session"
-	"github.com/indiefan/home_assistant_nanit/pkg/utils"
+	"github.com/combmag/home_assistant_nanit/pkg/baby"
+	"github.com/combmag/home_assistant_nanit/pkg/client"
+	"github.com/combmag/home_assistant_nanit/pkg/message"
+	"github.com/combmag/home_assistant_nanit/pkg/mqtt"
+	"github.com/combmag/home_assistant_nanit/pkg/rtmpserver"
+	"github.com/combmag/home_assistant_nanit/pkg/session"
+	"github.com/combmag/home_assistant_nanit/pkg/utils"
 )
 
 // App - application container

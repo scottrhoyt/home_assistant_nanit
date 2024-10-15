@@ -3,8 +3,8 @@ package baby_test
 import (
 	"testing"
 
+	"github.com/combmag/home_assistant_nanit/pkg/baby"
 	"github.com/stretchr/testify/assert"
-	"github.com/indiefan/home_assistant_nanit/pkg/baby"
 )
 
 func TestStateAsMap(t *testing.T) {
