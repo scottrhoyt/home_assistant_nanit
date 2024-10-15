@@ -55,6 +55,10 @@ func (conn *Connection) Run(manager *baby.StateManager, ctx utils.GracefulContex
 
 // {id:473  type:PUT_CONTROL  control:{nightLight:LIGHT_ON}}
 func handleLight(client MQTT.Client, msg MQTT.Message) {
+	var connection = CLT.GetWebsocketConnection()
+	if connection == nil {
+		return
+	}
 	log.Info().Str("topic", msg.Topic()).Msgf("Received Volume: %s", msg.Payload())
 	var lightResult LightMessage
 	if err := json.Unmarshal(msg.Payload(), &lightResult); err != nil {
@@ -73,7 +77,7 @@ func handleLight(client MQTT.Client, msg MQTT.Message) {
 		},
 	}
 
-	awaitFunc := CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_CONTROL, settingsRequest)
+	awaitFunc := connection.SendRequest(CLT.RequestType_PUT_CONTROL, settingsRequest)
 
 	// Wait for the response with a timeout (e.g., 5 seconds)
 	response, err := awaitFunc(5 * time.Second)
@@ -92,7 +96,7 @@ func handleLight(client MQTT.Client, msg MQTT.Message) {
 			},
 		}
 
-		awaitFunc = CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_CONTROL, timerRequest)
+		awaitFunc = connection.SendRequest(CLT.RequestType_PUT_CONTROL, timerRequest)
 
 		// Wait for the response with a timeout (e.g., 5 seconds)
 		response, err = awaitFunc(5 * time.Second)
@@ -111,7 +115,7 @@ func handleLight(client MQTT.Client, msg MQTT.Message) {
 			},
 		}
 
-		awaitFunc = CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_SETTINGS, brightnessRequest)
+		awaitFunc = connection.SendRequest(CLT.RequestType_PUT_SETTINGS, brightnessRequest)
 
 		// Wait for the response with a timeout (e.g., 5 seconds)
 		response, err = awaitFunc(5 * time.Second)
@@ -128,6 +132,10 @@ func handleLight(client MQTT.Client, msg MQTT.Message) {
 //	}
 func handleVolume(client MQTT.Client, msg MQTT.Message) {
 	log.Info().Str("topic", msg.Topic()).Msgf("Received Volume: %s", msg.Payload())
+	var connection = CLT.GetWebsocketConnection()
+	if connection == nil {
+		return
+	}
 	var volumeResult VolumeMessage
 	if err := json.Unmarshal(msg.Payload(), &volumeResult); err != nil {
 		log.Printf("Error parsing JSON: %v\n", err)
@@ -139,7 +147,7 @@ func handleVolume(client MQTT.Client, msg MQTT.Message) {
 	}
 	settingsRequest.Settings.Volume = &messageVolume
 
-	awaitFunc := CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_SETTINGS, settingsRequest)
+	awaitFunc := connection.SendRequest(CLT.RequestType_PUT_SETTINGS, settingsRequest)
 
 	// Wait for the response with a timeout (e.g., 5 seconds)
 	response, err := awaitFunc(5 * time.Second)
@@ -151,6 +159,10 @@ func handleVolume(client MQTT.Client, msg MQTT.Message) {
 }
 func handlePlayback(client MQTT.Client, msg MQTT.Message) {
 	log.Info().Str("topic", msg.Topic()).Msgf("Received message: %s", msg.Payload())
+	var connection = CLT.GetWebsocketConnection()
+	if connection == nil {
+		return
+	}
 	// Parse the MQTT message payload (assuming it's JSON)
 	var mqttPayload struct {
 		Playback struct {
@@ -195,7 +207,7 @@ func handlePlayback(client MQTT.Client, msg MQTT.Message) {
 		log.Error().Str("status", playbackStatus).Msg("Invalid playback status")
 		return
 	}
-	awaitFunc := CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_PLAYBACK, playbackRequest)
+	awaitFunc := connection.SendRequest(CLT.RequestType_PUT_PLAYBACK, playbackRequest)
 
 	// Wait for the response with a timeout (e.g., 5 seconds)
 	response, err := awaitFunc(5 * time.Second)
@@ -231,7 +243,7 @@ func runMqtt(conn *Connection, attempt utils.AttemptContext) {
 
 	topicToSubscribe3 := fmt.Sprintf("%v/babies/light", conn.Opts.TopicPrefix)
 	client.Subscribe(topicToSubscribe3, 1, handleLight)
-
+	// }
 	unsubscribe := conn.StateManager.Subscribe(func(babyUID string, state baby.State) {
 		publish := func(key string, value interface{}) {
 			topic := fmt.Sprintf("%v/babies/%v/%v", conn.Opts.TopicPrefix, babyUID, key)
