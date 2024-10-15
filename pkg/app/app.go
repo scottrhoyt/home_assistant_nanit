@@ -21,6 +21,7 @@ type App struct {
 	BabyStateManager *baby.StateManager
 	RestClient       *client.NanitClient
 	MQTTConnection   *mqtt.Connection
+	WebsocketConn    *client.WebsocketConnectionManager
 }
 
 // NewApp - constructor
@@ -86,6 +87,7 @@ func (app *App) handleBaby(baby baby.Baby, ctx utils.GracefulContext) {
 	if app.Opts.RTMP != nil || app.MQTTConnection != nil {
 		// Websocket connection
 		ws := client.NewWebsocketConnectionManager(baby.UID, baby.CameraUID, app.SessionStore.Session, app.RestClient, app.BabyStateManager)
+		app.WebsocketConn = ws // Store the connection in the app struct
 
 		ws.WithReadyConnection(func(conn *client.WebsocketConnection, childCtx utils.GracefulContext) {
 			app.runWebsocket(baby.UID, conn, childCtx)

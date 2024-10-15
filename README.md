@@ -55,3 +55,44 @@ camera:
 ```
 
 Restart Home Assistant and you should now have a camera entity named Nanit for use in dashboards.
+
+
+## Topics
+nanit/babies/light
+
+payload:
+```
+{
+  "isLightOn": true,
+  "nightLightTimeout": 0
+}
+```
+900/1800/3600/0
+
+nanit/babies/volume
+```
+{
+  "volume": 30
+}
+```
+
+nanit/babies/playback
+
+Start Whitenoise
+```
+{
+  "playback": {
+    "status": "STARTED",
+    "filename": "whitenoise.wav"
+  }
+}
+```
+
+Stop
+```
+{
+   "playback":{
+     "status":"STOPPED"
+   }
+}
+```

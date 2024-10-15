@@ -6,11 +6,11 @@ import (
 	sync "sync"
 	"time"
 
-	"github.com/rs/zerolog/log"
-	"github.com/sacOO7/gowebsocket"
 	"github.com/indiefan/home_assistant_nanit/pkg/baby"
 	"github.com/indiefan/home_assistant_nanit/pkg/session"
 	"github.com/indiefan/home_assistant_nanit/pkg/utils"
+	"github.com/rs/zerolog/log"
+	"github.com/sacOO7/gowebsocket"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -33,6 +33,27 @@ type WebsocketConnectionManager struct {
 	mu               sync.RWMutex
 	readyState       *readyState
 	readySubscribers []WebsocketConnectionHandler
+}
+
+var (
+	// Static variable to hold the WebSocket connection
+	websocketConnection *WebsocketConnection
+	// Mutex to control access to the connection
+	connMutex sync.RWMutex
+)
+
+// GetWebsocketConnection returns the current WebSocket connection.
+func GetWebsocketConnection() *WebsocketConnection {
+	connMutex.RLock()
+	defer connMutex.RUnlock()
+	return websocketConnection
+}
+
+// SetWebsocketConnection updates the current WebSocket connection.
+func SetWebsocketConnection(conn *WebsocketConnection) {
+	connMutex.Lock()
+	defer connMutex.Unlock()
+	websocketConnection = conn
 }
 
 // NewWebsocketConnectionManager - constructor
@@ -121,6 +142,11 @@ func (manager *WebsocketConnectionManager) run(attempt utils.AttemptContext) {
 
 			manager.mu.Lock()
 			manager.readyState = &readyState
+
+			// Update the static variable with the new connection
+			connMutex.Lock()
+			websocketConnection = conn
+			connMutex.Unlock()
 			subscribedHandlers := make([]WebsocketConnectionHandler, len(manager.readySubscribers))
 			copy(subscribedHandlers, manager.readySubscribers)
 			manager.mu.Unlock()

@@ -7,10 +7,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/indiefan/home_assistant_nanit/pkg/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/sacOO7/gowebsocket"
-	"github.com/indiefan/home_assistant_nanit/pkg/utils"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -37,6 +37,16 @@ func NewWebsocketConnection(socket *gowebsocket.Socket) *WebsocketConnection {
 		resHandlers:   make(map[int32]unhandledRequest),
 		lastRequestID: 0,
 	}
+}
+
+// Add this method to expose the WebsocketConnection
+func (manager *WebsocketConnectionManager) GetConnection() *WebsocketConnection {
+	manager.mu.RLock()
+	defer manager.mu.RUnlock()
+	if manager.readyState != nil {
+		return manager.readyState.Connection
+	}
+	return nil
 }
 
 // RegisterMessageHandler - registers handler which will be called whenever new message is received

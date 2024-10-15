@@ -1,19 +1,32 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
-	"github.com/rs/zerolog/log"
 	"github.com/indiefan/home_assistant_nanit/pkg/baby"
+	CLT "github.com/indiefan/home_assistant_nanit/pkg/client"
 	"github.com/indiefan/home_assistant_nanit/pkg/utils"
+	"github.com/rs/zerolog/log"
 )
 
 // Connection - MQTT context
 type Connection struct {
 	Opts         Opts
 	StateManager *baby.StateManager
+}
+
+// VOlume MQTT Topic Data
+type VolumeMessage struct {
+	Volume int `json:"volume"`
+}
+
+type LightMessage struct {
+	IsLightOn         bool   `json:"isLightOn"`
+	NightLightTimeout *int32 `json:"nightLightTimeout"`
+	Brightness        *int32 `json:"brightness"`
 }
 
 // NewConnection - constructor
@@ -40,6 +53,159 @@ func (conn *Connection) Run(manager *baby.StateManager, ctx utils.GracefulContex
 	})
 }
 
+// {id:473  type:PUT_CONTROL  control:{nightLight:LIGHT_ON}}
+func handleLight(client MQTT.Client, msg MQTT.Message) {
+	log.Info().Str("topic", msg.Topic()).Msgf("Received Volume: %s", msg.Payload())
+	var lightResult LightMessage
+	if err := json.Unmarshal(msg.Payload(), &lightResult); err != nil {
+		log.Printf("Error parsing JSON: %v\n", err)
+		return
+	}
+	var lightStatus CLT.Control_NightLight
+	if lightResult.IsLightOn {
+		lightStatus = CLT.Control_LIGHT_ON
+	} else {
+		lightStatus = CLT.Control_LIGHT_OFF
+	}
+	var settingsRequest = &CLT.Request{
+		Control: &CLT.Control{
+			NightLight: &lightStatus,
+		},
+	}
+
+	awaitFunc := CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_CONTROL, settingsRequest)
+
+	// Wait for the response with a timeout (e.g., 5 seconds)
+	response, err := awaitFunc(5 * time.Second)
+	if err != nil {
+		log.Error().Err(err).Msg("Error while awaiting light response")
+	} else {
+		log.Info().Interface("response", response).Msg("Light response received")
+	}
+
+	if lightResult.NightLightTimeout != nil {
+
+		var timer = lightResult.NightLightTimeout
+		var timerRequest = &CLT.Request{
+			Control: &CLT.Control{
+				NightLightTimeout: timer,
+			},
+		}
+
+		awaitFunc = CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_CONTROL, timerRequest)
+
+		// Wait for the response with a timeout (e.g., 5 seconds)
+		response, err = awaitFunc(5 * time.Second)
+		if err != nil {
+			log.Error().Err(err).Msg("Error while awaiting light Timeout response")
+		} else {
+			log.Info().Interface("response", response).Msg("Light Timeout response received")
+		}
+	}
+
+	if lightResult.Brightness != nil {
+		var brightness = lightResult.Brightness
+		var brightnessRequest = &CLT.Request{
+			Settings: &CLT.Settings{
+				Brightness: brightness,
+			},
+		}
+
+		awaitFunc = CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_SETTINGS, brightnessRequest)
+
+		// Wait for the response with a timeout (e.g., 5 seconds)
+		response, err = awaitFunc(5 * time.Second)
+		if err != nil {
+			log.Error().Err(err).Msg("Error while awaiting light brightness response")
+		} else {
+			log.Info().Interface("response", response).Msg("Light brightness response received")
+		}
+	}
+}
+
+//	{
+//	  "volume": 30
+//	}
+func handleVolume(client MQTT.Client, msg MQTT.Message) {
+	log.Info().Str("topic", msg.Topic()).Msgf("Received Volume: %s", msg.Payload())
+	var volumeResult VolumeMessage
+	if err := json.Unmarshal(msg.Payload(), &volumeResult); err != nil {
+		log.Printf("Error parsing JSON: %v\n", err)
+		return
+	}
+	messageVolume := int32(volumeResult.Volume)
+	var settingsRequest = &CLT.Request{
+		Settings: &CLT.Settings{},
+	}
+	settingsRequest.Settings.Volume = &messageVolume
+
+	awaitFunc := CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_SETTINGS, settingsRequest)
+
+	// Wait for the response with a timeout (e.g., 5 seconds)
+	response, err := awaitFunc(5 * time.Second)
+	if err != nil {
+		log.Error().Err(err).Msg("Error while awaiting playback response")
+	} else {
+		log.Info().Interface("response", response).Msg("Playback response received")
+	}
+}
+func handlePlayback(client MQTT.Client, msg MQTT.Message) {
+	log.Info().Str("topic", msg.Topic()).Msgf("Received message: %s", msg.Payload())
+	// Parse the MQTT message payload (assuming it's JSON)
+	var mqttPayload struct {
+		Playback struct {
+			Status       string `json:"status"`
+			PlayBackType string `json:"playbackType"`
+		} `json:"playback"`
+	}
+	if err := json.Unmarshal(msg.Payload(), &mqttPayload); err != nil {
+		log.Error().Err(err).Msg("Unable to parse MQTT message")
+		return
+	}
+	// Map the parsed data to the protobuf request
+	playbackStatus := mqttPayload.Playback.Status
+
+	// Build the protobuf request based on the status received
+	var playbackStatusEnum CLT.Playback_Status
+	var playbackRequest *CLT.Request
+	switch playbackStatus {
+	case "STOPPED":
+		playbackStatusEnum = CLT.Playback_STOPPED
+		playbackRequest = &CLT.Request{
+			Playback: &CLT.Playback{
+				Status: &playbackStatusEnum,
+			},
+		}
+	case "STARTED":
+		playbackStatusEnum = CLT.Playback_STARTED
+		// filename := "Whitenoise.wav"
+		filename := mqttPayload.Playback.PlayBackType
+		duration := int32(3600)
+		playbackRequest = &CLT.Request{
+			Playback: &CLT.Playback{
+				Status:   &playbackStatusEnum,
+				Duration: &duration,
+				Soundtrack: &CLT.Soundtrack{
+					Filename: &filename,
+					Storage:  CLT.SoundtrackStorage_FACTORY.Enum(),
+				},
+			},
+		}
+	default:
+		log.Error().Str("status", playbackStatus).Msg("Invalid playback status")
+		return
+	}
+	awaitFunc := CLT.GetWebsocketConnection().SendRequest(CLT.RequestType_PUT_PLAYBACK, playbackRequest)
+
+	// Wait for the response with a timeout (e.g., 5 seconds)
+	response, err := awaitFunc(5 * time.Second)
+	if err != nil {
+		log.Error().Err(err).Msg("Error while awaiting playback response")
+	} else {
+		log.Info().Interface("response", response).Msg("Playback response received")
+	}
+}
+
 func runMqtt(conn *Connection, attempt utils.AttemptContext) {
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker(conn.Opts.BrokerURL)
@@ -56,6 +222,15 @@ func runMqtt(conn *Connection, attempt utils.AttemptContext) {
 	}
 
 	log.Info().Str("broker_url", conn.Opts.BrokerURL).Msg("Successfully connected to MQTT broker")
+
+	topicToSubscribe := fmt.Sprintf("%v/babies/playback", conn.Opts.TopicPrefix)
+	client.Subscribe(topicToSubscribe, 0, handlePlayback)
+
+	topicToSubscribe2 := fmt.Sprintf("%v/babies/volume", conn.Opts.TopicPrefix)
+	client.Subscribe(topicToSubscribe2, 1, handleVolume)
+
+	topicToSubscribe3 := fmt.Sprintf("%v/babies/light", conn.Opts.TopicPrefix)
+	client.Subscribe(topicToSubscribe3, 1, handleLight)
 
 	unsubscribe := conn.StateManager.Subscribe(func(babyUID string, state baby.State) {
 		publish := func(key string, value interface{}) {

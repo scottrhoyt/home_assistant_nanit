@@ -113,7 +113,7 @@ enum MountingMode {
 
 message Settings {
   optional bool nightVision = 2;
-
+  optional int32 brightness = 24;
   message SensorSettings {
     required SensorType sensorType = 1;
     optional bool useLowThreshold = 2;
@@ -185,8 +185,17 @@ message Playback {
     STARTED = 0;
     STOPPED = 1;
   }
-
   required Status status = 1;
+  required int32 duration = 2;
+  required Soundtrack soundtrack = 3;
+}
+message Soundtrack {
+    required string filename = 2;
+    required SoundtrackStorage storage = 1;
+}
+ enum SoundtrackStorage {
+  FACTORY = 0;
+  USER = 1;
 }
 
 message Stream {
