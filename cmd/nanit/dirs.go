@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/indiefan/home_assistant_nanit/pkg/app"
-	"github.com/indiefan/home_assistant_nanit/pkg/utils"
+	"github.com/combmag/home_assistant_nanit/pkg/app"
+	"github.com/combmag/home_assistant_nanit/pkg/utils"
 	"github.com/rs/zerolog/log"
 )
 
