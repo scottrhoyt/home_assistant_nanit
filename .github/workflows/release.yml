@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  REGISTRY_IMAGE: combmag/nanit
+  REGISTRY_IMAGE: christmagri/nanit
 
 jobs:
   build:
