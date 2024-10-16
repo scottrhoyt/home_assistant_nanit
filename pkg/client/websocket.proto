@@ -186,8 +186,8 @@ message Playback {
     STOPPED = 1;
   }
   required Status status = 1;
-  required int32 duration = 2;
-  required Soundtrack soundtrack = 3;
+  optional int32 duration = 2;
+  optional Soundtrack soundtrack = 3;
 }
 message Soundtrack {
     required string filename = 2;

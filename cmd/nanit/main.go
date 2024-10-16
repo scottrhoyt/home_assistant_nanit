@@ -12,8 +12,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var myInstance *app.App
-
 func main() {
 	initLogger()
 	logAppVersion()
@@ -70,8 +68,6 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	instance := app.NewApp(opts)
-
-	myInstance = instance
 	runner := utils.RunWithGracefulCancel(instance.Run)
 
 	<-interrupt

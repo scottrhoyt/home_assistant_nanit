@@ -99,14 +99,14 @@ Used to start/stop whitenoise
 
 interface Playback {
     status: "Started" | "Stopped",
-    filename: "birds.wav" | "whitenoise.wav" | "waves.wav" | "wind.wav"
+    playbackType: "birds.wav" | "whitenoise.wav" | "waves.wav" | "wind.wav"
 }
 
 Start Playback:
 {
   "playback": {
     "status": "STARTED",
-    "filename": "whitenoise.wav"
+    "playbackType": "whitenoise.wav"
   }
 }
 ```
