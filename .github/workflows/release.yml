@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  REGISTRY_IMAGE: christmagri /nanit
+  REGISTRY_IMAGE: christmagri/nanit
 
 jobs:
   build:
