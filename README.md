@@ -1,6 +1,9 @@
 # Background
 
-This is a fork of a no-longer-maintained project (https://gitlab.com/adam.stanek/nanit) with added support for Nanit's (now required) 2FA authentication.
+This is a fork from (https://github.com/indiefan/home_assistant_nanit) with added support for:
+
+* Nanit's (now required) 2FA authentication.
+* Send Custom Nanit Events (Sound/Light) through MQTT
 
 # Installation (Docker)
 
