@@ -97,6 +97,7 @@ func (conn *WebsocketConnection) SendRequest(reqType RequestType, requestData *R
 		HandleResponse: func(res *Response) {
 			select {
 			case <-resC:
+				log.Printf("Request ID: %d, StatusCode: %v, StatusMessage: %s", id, res.StatusCode, res.GetStatusMessage())
 				return // Channel already closed (ie. timeout)
 			default:
 				resC <- res
