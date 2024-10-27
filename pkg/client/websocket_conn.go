@@ -117,7 +117,7 @@ func (conn *WebsocketConnection) SendRequest(reqType RequestType, requestData *R
 		case <-timer.C:
 			resa := <-resC
 			close(resC)
-			log.Info().Interface("Timeout Error: %v", resa.StatusCode).Msg(("Timeout")
+			log.Info().Interface("Timeout Error: %v", resa.StatusCode).Msg(("Timeout"))
 			return nil, errors.New("Request timeout.")
 		case res := <-resC:
 			close(resC)
