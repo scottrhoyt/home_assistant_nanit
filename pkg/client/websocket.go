@@ -75,6 +75,7 @@ func NewWebsocketConnectionManager(babyUID string, cameraUID string, session *se
 				ticker.Stop()
 				return
 			case <-ticker.C:
+				SetWebsocketConnection(conn)
 				conn.SendMessage(&Message{
 					Type: Message_Type(Message_KEEPALIVE).Enum(),
 				})
@@ -145,7 +146,7 @@ func (manager *WebsocketConnectionManager) run(attempt utils.AttemptContext) {
 
 			// Update the static variable with the new connection
 			connMutex.Lock()
-			websocketConnection = conn
+			SetWebsocketConnection(conn)
 			connMutex.Unlock()
 			subscribedHandlers := make([]WebsocketConnectionHandler, len(manager.readySubscribers))
 			copy(subscribedHandlers, manager.readySubscribers)

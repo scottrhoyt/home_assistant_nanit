@@ -82,7 +82,7 @@ func handleLight(client MQTT.Client, msg MQTT.Message) {
 	awaitFunc := connection.SendRequest(CLT.RequestType_PUT_CONTROL, settingsRequest)
 
 	// Wait for the response with a timeout (e.g., 5 seconds)
-	response, err := awaitFunc(5 * time.Second)
+	response, err := awaitFunc(60 * time.Second)
 	if err != nil {
 		log.Error().Err(err).Msg("Error while awaiting light response")
 	} else {
@@ -152,11 +152,11 @@ func handleVolume(client MQTT.Client, msg MQTT.Message) {
 	awaitFunc := connection.SendRequest(CLT.RequestType_PUT_SETTINGS, settingsRequest)
 
 	// Wait for the response with a timeout (e.g., 5 seconds)
-	response, err := awaitFunc(5 * time.Second)
+	response, err := awaitFunc(60 * time.Second)
 	if err != nil {
-		log.Error().Err(err).Msg("Error while awaiting playback response")
+		log.Error().Err(err).Msg("Error while awaiting volume response")
 	} else {
-		log.Info().Interface("response", response).Msg("Playback response received")
+		log.Info().Interface("response", response).Msg("Volume response received")
 	}
 }
 func handlePlayback(client MQTT.Client, msg MQTT.Message) {

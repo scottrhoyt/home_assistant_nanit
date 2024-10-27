@@ -12,6 +12,7 @@ services:
   nanit:
     # Image to pull, adjust the :suffix for your version tag
     image: combmag/nanit:latest
+    container_name: nanit
     # Makes the container auto-start whenever you restart your computer
     restart: unless-stopped
     # Expose the RTMP port
