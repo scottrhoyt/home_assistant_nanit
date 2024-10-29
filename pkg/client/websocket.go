@@ -144,9 +144,9 @@ func (manager *WebsocketConnectionManager) run(attempt utils.AttemptContext) {
 			manager.readyState = &readyState
 
 			// Update the static variable with the new connection
-			connMutex.Lock()
+			// connMutex.Lock()
 			SetWebsocketConnection(conn)
-			connMutex.Unlock()
+			// connMutex.Unlock()
 			subscribedHandlers := make([]WebsocketConnectionHandler, len(manager.readySubscribers))
 			copy(subscribedHandlers, manager.readySubscribers)
 			manager.mu.Unlock()
