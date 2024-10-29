@@ -75,7 +75,6 @@ func NewWebsocketConnectionManager(babyUID string, cameraUID string, session *se
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				SetWebsocketConnection(conn)
 				conn.SendMessage(&Message{
 					Type: Message_Type(Message_KEEPALIVE).Enum(),
 				})
