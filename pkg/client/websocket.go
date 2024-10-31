@@ -39,20 +39,19 @@ var (
 	// Static variable to hold the WebSocket connection
 	websocketConnection *WebsocketConnection
 	// Mutex to control access to the connection
-	connMutex sync.RWMutex
+	// connMutex sync.RWMutex
 )
 
 // GetWebsocketConnection returns the current WebSocket connection.
 func GetWebsocketConnection() *WebsocketConnection {
-	connMutex.RLock()
-	defer connMutex.RUnlock()
+	// connMutex.RLock()
+	log.Logger.Info().Str("wsconnection", websocketConnection.socket.Url).Msg("connected %wsconnection")
 	return websocketConnection
+	// defer connMutex.RUnlock()
 }
 
 // SetWebsocketConnection updates the current WebSocket connection.
 func SetWebsocketConnection(conn *WebsocketConnection) {
-	connMutex.Lock()
-	defer connMutex.Unlock()
 	websocketConnection = conn
 }
 
@@ -68,7 +67,7 @@ func NewWebsocketConnectionManager(babyUID string, cameraUID string, session *se
 
 	manager.WithReadyConnection(func(conn *WebsocketConnection, ctx utils.GracefulContext) {
 		ticker := time.NewTicker(20 * time.Second)
-
+		SetWebsocketConnection(conn)
 		for {
 			select {
 			case <-ctx.Done():
