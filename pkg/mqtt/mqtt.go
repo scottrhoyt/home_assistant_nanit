@@ -228,6 +228,35 @@ func runMqtt(conn *Connection, attempt utils.AttemptContext) {
 	opts.SetPassword(conn.Opts.Password)
 	opts.SetCleanSession(false)
 
+	// Enable auto-reconnect
+	opts.SetAutoReconnect(true)
+
+	// Handler to execute on initial connection and reconnection
+	opts.SetOnConnectHandler(func(c MQTT.Client) {
+		log.Info().Str("broker_url", conn.Opts.BrokerURL).Msg("Connected to MQTT broker")
+
+		// Subscribe to topics upon connection or reconnection
+		topicToSubscribe := fmt.Sprintf("%v/babies/playback", conn.Opts.TopicPrefix)
+		if token := c.Subscribe(topicToSubscribe, 0, handlePlayback); token.Wait() && token.Error() != nil {
+			log.Error().Err(token.Error()).Msg("Failed to subscribe to playback topic")
+		}
+
+		topicToSubscribe2 := fmt.Sprintf("%v/babies/volume", conn.Opts.TopicPrefix)
+		if token := c.Subscribe(topicToSubscribe2, 0, handleVolume); token.Wait() && token.Error() != nil {
+			log.Error().Err(token.Error()).Msg("Failed to subscribe to volume topic")
+		}
+
+		topicToSubscribe3 := fmt.Sprintf("%v/babies/light", conn.Opts.TopicPrefix)
+		if token := c.Subscribe(topicToSubscribe3, 0, handleLight); token.Wait() && token.Error() != nil {
+			log.Error().Err(token.Error()).Msg("Failed to subscribe to light topic")
+		}
+	})
+
+	// Handler to log connection lost events
+	opts.SetConnectionLostHandler(func(client MQTT.Client, err error) {
+		log.Warn().Err(err).Msg("MQTT connection lost, attempting to reconnect")
+	})
+
 	client := MQTT.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Error().Str("broker_url", conn.Opts.BrokerURL).Err(token.Error()).Msg("Unable to connect to MQTT broker")
@@ -235,17 +264,7 @@ func runMqtt(conn *Connection, attempt utils.AttemptContext) {
 		return
 	}
 
-	log.Info().Str("broker_url", conn.Opts.BrokerURL).Msg("Successfully connected to MQTT broker")
-
-	topicToSubscribe := fmt.Sprintf("%v/babies/playback", conn.Opts.TopicPrefix)
-	client.Subscribe(topicToSubscribe, 0, handlePlayback)
-
-	topicToSubscribe2 := fmt.Sprintf("%v/babies/volume", conn.Opts.TopicPrefix)
-	client.Subscribe(topicToSubscribe2, 0, handleVolume)
-
-	topicToSubscribe3 := fmt.Sprintf("%v/babies/light", conn.Opts.TopicPrefix)
-	client.Subscribe(topicToSubscribe3, 0, handleLight)
-	// }
+	// Publish state updates
 	unsubscribe := conn.StateManager.Subscribe(func(babyUID string, state baby.State) {
 		publish := func(key string, value interface{}) {
 			topic := fmt.Sprintf("%v/babies/%v/%v", conn.Opts.TopicPrefix, babyUID, key)
