@@ -31,7 +31,7 @@ The refresh token provides complete access to your Nanit account without requiri
 Now that the initial authentication has been done, and the refresh token has been generated, it's time to start the container:
 
 ```bash
-# Note: use your local IP, reachable from Cam (not 127.0.0.1 nor localhost)
+# Note: use your local IP, reachable from Cam (not 127.0.0.1 nor localhost). Host port and container port must be the same and reflected in the `NANIT_RTMP_ADDR` variable.
 
 docker run \
   -d \
