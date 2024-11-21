@@ -98,7 +98,7 @@ Used to start/stop whitenoise
 ```
 
 interface Playback {
-    status: "Started" | "Stopped",
+    status: "STARTED" | "STOPPED",
     playbackType: "Birds.wav" | "White Noise.wav" | "Waves.wav" | "Wind.wav"
 }
 
