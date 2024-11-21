@@ -73,7 +73,7 @@ This is used to turn on light/brightness and repeat
 |-----------|-------------|------|---------------|
 |   isLightOn        |  Turn on light           |   boolean   |     Required          |
 |   nightLightTimeout       |     Timer to set timeout        |   number   |     Optional. Values: 900, 1800, 3600, 0(infinite)          |
-|    Brightness       |     Camera light brightness        |  number    |       Optional. Values: 0 - 100        |
+|    brightness       |     Camera light brightness        |  number    |       Optional. Values: 0 - 100        |
 
 Example:
 ```
